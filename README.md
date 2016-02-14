@@ -1,2 +1,2 @@
 # Coin
-A repository for 2016 IT Factory COIN answers
+A repository for [IT Factory COIN](https://algorithm.dimigo.hs.kr/) answers
