@@ -3,5 +3,5 @@ project(Coin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(SOURCE_FILES w09/p2049.cpp)
+set(SOURCE_FILES misc/t1267.cpp)
 add_executable(Coin ${SOURCE_FILES})
