@@ -3,7 +3,7 @@
  * @since 2016-03-14
  */
 
-#include<stdio.h>
+#include <stdio.h>
 int main(){
     int a = -100;
     printf("%d", a);

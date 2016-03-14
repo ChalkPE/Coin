@@ -3,7 +3,7 @@
  * @since 2016-03-14
  */
 
-#include<stdio.h>
+#include <stdio.h>
 int main(){
     int a = -1, b = 100;
     printf("%d\n%d", a, b);
