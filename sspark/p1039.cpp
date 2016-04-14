@@ -1,5 +1,5 @@
 /**
- * @author ChalkPE <chalkpe@gmail.com>
+ * @author ChalkPE <chalk@chalk.pe>
  * @since 2016-04-08
  */
 
