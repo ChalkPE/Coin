@@ -5,11 +5,11 @@
 
 #include <stdio.h>
 int main(){
-    int h, w, f; scanf("%d %d", &h, &w);
-    f = w + 100 - h;
+    int h, w, f; scanf("%d %d", &h, &w); // get values
+    f = w + 100 - h; // calculate result
 
-    printf("비만수치는 %d입니다.\n", f);
-    if(f > 0) printf("당신은 비만이군요.");
+    printf("비만수치는 %d입니다.\n", f); // print result
+    if(f > 0) printf("당신은 비만이군요."); // print information
 
     return 0;
 }
