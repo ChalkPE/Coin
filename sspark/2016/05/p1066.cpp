@@ -7,5 +7,5 @@
 
 int main(){
     int i, n = 0, sum = 0; for(i = 1; n < 100; sum += n, i++) scanf("%d", &n);
-    return 0 * printf("%d\n%.1lf", sum, (double) sum / --i);
+    return 0 * printf("%d\n%.1lf", sum, sum / (--i + 0.0));
 }
