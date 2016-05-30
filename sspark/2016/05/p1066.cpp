@@ -6,8 +6,6 @@
 #include <stdio.h>
 
 int main(){
-    int i, n, sum = 0; for(i = 1; ; i++){
-        scanf("%d", &n); sum += n;
-        if(n >= 100) return 0 * printf("%d\n%.1lf", sum, (double) sum / i);
-    }
+    int i, n = 0, sum = 0; for(i = 1; n < 100; sum += n, i++) scanf("%d", &n);
+    return 0 * printf("%d\n%.1lf", sum, (double) sum / --i);
 }
