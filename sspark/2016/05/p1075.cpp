@@ -6,5 +6,5 @@
 #include <stdio.h>
 
 int main(){
-    int i; for(i = 10; i <= 20; i++) printf("%d ", i);
+    int i = 0; for(; i <= 20; i++) printf("%d ", i);
 }

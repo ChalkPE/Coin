@@ -6,6 +6,6 @@
 #include <stdio.h>
 
 int main(){
-    int i; char c; scanf("%c", &c);
+    char c, i; scanf("%c", &c);
     for(i = 0; i < 20; i++) printf("%c", c);
 }
