@@ -6,5 +6,5 @@
 #include <stdio.h>
 
 int main(){
-    int n, s = 0; scanf("%d", &n); for(; n <= 100; n++) s += n; return 0 * printf("%d", s);
+    int n, s = 0; for(scanf("%d", &n); n <= 100; n++) s += n; return 0 * printf("%d\n", s);
 }
