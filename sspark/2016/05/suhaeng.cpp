@@ -3,7 +3,7 @@
 int main()
 {
     int running = 1;
-    int runCount = 0;
+    int runCount = -1;
 
     int i, n, sum;
     int a, b, fact;
@@ -13,7 +13,7 @@ int main()
 
     while(running)
     {
-        if(runCount == 0)
+        if(runCount < 0)
         {
             menu = '?';
             printf("WP15 박준영 1413\n정말 간단한 계산기\n\n>>> ?\n");
