@@ -6,6 +6,7 @@ int main()
     int runCount = 0;
 
     int i, n, sum;
+    int a, b, fact;
 
     char menu;
     int input;
@@ -27,11 +28,13 @@ int main()
         {
             default:
             case '?':
+                printf("! - 종료\n");
+                printf("? - 도움말\n");
                 printf("A - 평균 구하기\n");
                 printf("D - 약수 구하기\n");
                 printf("M - 배수 구하기\n");
-                printf("? - 도움말\n");
-                printf("! - 종료\n");
+                printf("F - 팩토리얼 구하기\n");
+                printf("N - 피보나치 수 구하기\n");
                 break;
 
             case '!':
@@ -48,6 +51,7 @@ int main()
                 while(n <= 0);
 
                 sum = 0;
+                printf(">>>>>> ");
                 for(i = 0; i < n; i++){
                     scanf("%d", &input);
                     sum += input;
@@ -88,6 +92,39 @@ int main()
                     printf("%d ", i * input);
                 }
                 printf("...\n");
+                break;
+
+            case 'f':
+            case 'F':
+                do
+                {
+                    scanf("%d", &input);
+                }
+                while(input <= 0);
+
+                fact = 1;
+                for(i = input; i >= 2; i--)
+                {
+                    fact *= i;
+                }
+                printf("<<< %d\n", fact);
+                break;
+
+            case 'n':
+            case 'N':
+                do
+                {
+                    scanf("%d", &input);
+                }
+                while(input <= 0);
+
+                a = 0; b = 1;
+                for(i = 1; i <= input; i++){
+                    n = a + b;
+                    a = b;
+                    b = n;
+                }
+                printf("<<< %d\n", a);
                 break;
         }
 
