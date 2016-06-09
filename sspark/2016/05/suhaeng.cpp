@@ -33,6 +33,7 @@ int main()
                 printf("A - 평균 구하기\n");
                 printf("D - 약수 구하기\n");
                 printf("M - 배수 구하기\n");
+                printf("C - 공약수 구하기\n");
                 printf("F - 팩토리얼 구하기\n");
                 printf("N - 피보나치 수 구하기\n");
                 break;
@@ -92,6 +93,33 @@ int main()
                     printf("%d ", i * input);
                 }
                 printf("...\n");
+                break;
+
+            case 'c':
+            case 'C':
+                do
+                {
+                    scanf("%d", &a);
+                }
+                while(a <= 0);
+
+                do
+                {
+                    scanf("%d", &b);
+                }
+                while(b <= 0);
+
+                n = a < b ? a : b;
+
+                printf("<<< ");
+                for(i = 1; i <= n; i++)
+                {
+                    if(a % i == 0 && b % i == 0)
+                    {
+                        printf("%d ", i);
+                    }
+                }
+                printf("\n");
                 break;
 
             case 'f':
