@@ -5,8 +5,8 @@
 
 #include <stdio.h>
 int main(){
-    int n, x, y, a = 1, b = 'A'; scanf("%d", &n);
-    for(y = n; y > 0; y--, printf("\n")){
+    int n, x, y, a = 1, b = 'A';
+    for(y = (scanf("%d", &n), n); y > 0; y--, printf("\n")){
         for(x = y; x >= 1; x--, printf("%d ", a++));
         for(x = n; x >= y; x--, printf("%c ", b++));
     }
