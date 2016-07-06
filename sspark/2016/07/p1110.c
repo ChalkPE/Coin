@@ -5,12 +5,8 @@
 
 #include <stdio.h>
 
-int f(int x){
-    int k, y; for(k = y = 1; k <= x; y *= k++); return y;
-}
-
 int main(){
-    int n, k, y; scanf("%d", &n);
-    for(y = k = 0; k < n; y += f(++k));
+    int n, k, y, f = 1; scanf("%d", &n);
+    for(k = y = 0; k < n; y += (f *= ++k));
     return 0 * printf("%d", y);
 }
