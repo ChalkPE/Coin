@@ -3,5 +3,5 @@ project(Coin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(SOURCE_FILES sspark/2016/07/p1112.c)
+set(SOURCE_FILES sspark/2016/07/contest/p1287.cpp)
 add_executable(Coin ${SOURCE_FILES})
