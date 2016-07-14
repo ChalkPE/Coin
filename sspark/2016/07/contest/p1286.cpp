@@ -4,26 +4,15 @@
  */
 
 #include <stdio.h>
-int main(){
-    int n, m, y, x; scanf("%d", &n);
 
-    for(x = 0; x < n; x++) printf("*");
-    printf("\n");
+#define entire for(x = 0; x < n; x++) printf("*"); printf("\n");
+#define border for(x = 0; x <= m - y; x++) printf("*");
+#define center for(x = 1; x <= y * 2 - 1; x++) printf(" ");
 
-    m = (n - 1) / 2;
+#define increase for(y = 1; y <= m; y++, printf("\n"))
+#define decrease for(y = m - 1; y >= 1; y--, printf("\n"))
 
-    for(y = 1; y <= m; y++, printf("\n")){
-        for(x = 0; x <= m - y; x++) printf("*");
-        for(x = 1; x <= y * 2 - 1; x++) printf(" ");
-        for(x = 0; x <= m - y; x++) printf("*");
-    }
-
-    for(y = m - 1; y >= 1; y--, printf("\n")){
-        for(x = 0; x <= m - y; x++) printf("*");
-        for(x = 1; x <= y * 2 - 1; x++) printf(" ");
-        for(x = 0; x <= m - y; x++) printf("*");
-    }
-
-    for(x = 0; x < n; x++) printf("*");
-    printf("\n");
+int main() {
+    int n, m, y, x; scanf("%d", &n); m = (n - 1) / 2;
+    entire increase { border center border } decrease { border center border } entire
 }

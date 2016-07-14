@@ -1,12 +1,13 @@
 /**
  * @author ChalkPE <chalk@chalk.pe>
- * @since 2016-07-06
+ * @since 2016-07-14
  */
 
 #include <stdio.h>
 
 int main(){
-    int stu[100000], n, m, i, current = 0, max = 0;
+    int stu[100000], n, m, i;
+    int current = 0, max = 0;
 
     scanf("%d %d", &n, &m);
 
