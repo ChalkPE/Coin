@@ -6,5 +6,5 @@
 #include <stdio.h>
 int main() {
     int a[100], i, j;
-    for(i = 0; i < 100; i++) if(scanf("%d", a + i), !a[i]) { for(j = i - 1; j >= 0; printf("%d ", a[j--])); return 0; }
+    for(i = 0; i < 100; i++) if(scanf("%d", a + i), !a[i]) { for(j = i; j > 0; printf("%d ", a[--j])); return 0; }
 }
