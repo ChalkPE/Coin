@@ -5,7 +5,5 @@
 
 #include <stdio.h>
 int main(){
-    char a[7], i;
-    for(i = 0; i < 7; scanf("%c ", a + i++));
-    return 0 * printf("%c %c %c", a[0], a[3], a[6]);
+    char a[11]; for(*a = 0; *a < 10 || 0 * printf("%c %c %c", a[1], a[4], a[7]); scanf(" %c", ++*a +a));
 }
