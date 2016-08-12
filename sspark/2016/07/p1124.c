@@ -4,11 +4,13 @@
  */
 
 #include <stdio.h>
-#define swap(x, y) if(x > y){ k = x; x = y; y = k; }
+
+#define n 10
+#define swap(x, y) if(x < y) k = x, x = y, y = k
 
 int main(){
-    int i, j, k, a[10];
-    for(i = 0; i < 10; i++) scanf("%d", a + i);
-    for(i = 1; i < 10; i++) for(j = 0; j < 10; j++) swap(a[i], a[j]);
-    for(i = 0; i < 10; i++) printf("%d ", a[i]);
+    int i, j, k, a[n];
+    for(i = 0; i < n; i++) scanf("%d", a + i);
+    for(i = 0; i < n - 1; i++) for(j = i + 1; j < n; j++) swap(a[i], a[j]);
+    for(i = 0; i < n; i++) printf("%d ", a[i]);
 }
