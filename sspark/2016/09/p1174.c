@@ -10,7 +10,6 @@ void write(int a[]){
 }
 
 int main(){
-    int i, j, k, a[10];
-    for(i = 0; i < 10; scanf("%d", a+ i++));
+    int i, j, k, a[10]; for(i = 0; i < 10; scanf("%d", a+ i++));
     for(i = 9; i > 0; i--, write(a)) for(j = 0; j < i; j++) if(a[j] < a[j + 1]) k = a[j], a[j] = a[j + 1], a[j + 1] = k;
 }
