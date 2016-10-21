@@ -7,12 +7,12 @@
 int main(){
     int a[4];
 
-    //FILE *in = fopen("input.txt", "r"), *out = fopen("output.txt", "w");
-    /*f*/scanf(/*in,*/ "%d %d %d", a + 1, a + 2, a + 3);
+    freopen("input.txt", "r", stdin);
+    freopen("output.txt", "w", stdout);
 
+    scanf("%d %d %d", a + 1, a + 2, a + 3);
     *a = a[1] + a[2] + a[3];
-    /*f*/printf(/*out,*/ "%d %d...%d", *a, *a / 3, *a % 3);
+    printf("%d %d...%d", *a, *a / 3, *a % 3);
 
-    //fclose(in), fclose(out);
     return 0;
 }
