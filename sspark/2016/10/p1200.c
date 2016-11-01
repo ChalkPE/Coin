@@ -6,4 +6,4 @@
 #include <stdio.h>
 #include <ctype.h>
 
-int main(){ char c; while(scanf(" %c", &c), isalnum(c)) printf((isalpha(c) ? "%c\n" : "%d\n"), c); }
+int main(char c){ while(scanf(" %c", &c), isalnum(c)) printf(isalpha(c) ? "%c\n" : "%d\n", c); }
