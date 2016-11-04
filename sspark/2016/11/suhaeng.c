@@ -22,6 +22,7 @@
 #define OPCODE_EXPORT 12
 #define OPCODE_SCAN   13
 #define OPCODE_PRINT  14
+#define OPCODE_PRINTF 15
 
 #define OPCODE_ADD       20
 #define OPCODE_SUBTRACT  21
@@ -48,7 +49,7 @@ char* toUpperCase(char* s){
 
 int getOpcode(char* keyword){
     OPCODE(NOP) OPCODE(MOVE) OPCODE(PREV) OPCODE(NEXT) OPCODE(HERE) OPCODE(THERE) OPCODE(MARK) OPCODE(REMIND)
-    OPCODE(SET) OPCODE(IMPORT) OPCODE(EXPORT) OPCODE(SCAN) OPCODE(PRINT)
+    OPCODE(SET) OPCODE(IMPORT) OPCODE(EXPORT) OPCODE(SCAN) OPCODE(PRINT) OPCODE(PRINTF)
     OPCODE(ADD) OPCODE(SUBTRACT) OPCODE(MULTIPLY) OPCODE(DIVIDE) OPCODE(REMAINDER)
     return 0;
 }
@@ -67,8 +68,8 @@ int interpret(int codes[MAX_OPCODE_COUNT][2], char* filename){
         toUpperCase(keyword);
 
         switch(opcode = getOpcode(keyword)){
-            case OPCODE_NOP:    case OPCODE_HERE: case OPCODE_THERE:
-            case OPCODE_SCAN:   case OPCODE_PRINT:
+            case OPCODE_NOP:    case OPCODE_HERE:  case OPCODE_THERE:
+            case OPCODE_SCAN:   case OPCODE_PRINT: case OPCODE_PRINTF:
                 codes[length][0] = opcode; break;
 
             case OPCODE_MOVE: case OPCODE_PREV:     case OPCODE_NEXT:     case OPCODE_MARK:   case OPCODE_REMIND:
@@ -124,6 +125,7 @@ int run(int codes[MAX_OPCODE_COUNT][2], int length){
             break; case OPCODE_EXPORT: memory[argument] = memory[p];
             break; case OPCODE_SCAN:   memory[p] = (char) getchar();
             break; case OPCODE_PRINT:  putchar(memory[p]);
+            break; case OPCODE_PRINTF: printf("%d", memory[p]);
 
             break; case OPCODE_ADD:       memory[p] += argument;
             break; case OPCODE_SUBTRACT:  memory[p] -= argument;
@@ -145,5 +147,5 @@ int main(){
     if(!length) return -1;
 
     retval = run(codes, length);
-    return system("pause"), retval;
+    return putchar('\n'), system("pause"), retval;
 }
