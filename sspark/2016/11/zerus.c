@@ -44,7 +44,7 @@
 #define MAX_MEMORY_SIZE 65536
 #define MAX_OPCODE_COUNT 65536
 #define MAX_OPCODE_LENGTH 16
-#define MAX_BASE36_LENGTH 5
+#define MAX_BASE26_LENGTH 5
 
 
 
@@ -54,11 +54,10 @@ int label[MAX_LABEL_COUNT];
 int memory[MAX_MEMORY_SIZE];
 int opcodes[MAX_OPCODE_COUNT][2];
 
-char base36[] = {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8',
-        '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
-        'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+char base26[] = {
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
+        'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 };
 
 
@@ -100,12 +99,22 @@ int hash(char *s){
     return (int) (hash % MAX_LABEL_COUNT);
 }
 
-char* toBase36(int value){
-    char buffer[MAX_BASE36_LENGTH] = "0000";
+char* intToBase26(int value){
+    char buffer[MAX_BASE26_LENGTH] = "AAAA";
     size_t offset = sizeof(buffer) - 1;
 
-    do { buffer[--offset] = base36[value % 36]; } while(value /= 36);
+    do { buffer[--offset] = base26[value % 26]; } while(value /= 26);
     return strdup(buffer);
+}
+
+int base26toInt(char* base26){
+    char c; int result = 0;
+    while((c = *base26++) > 0){
+        if(c < 'A' || 'Z' < c) return -1;
+        result = result * 26 + (c - 'A');
+    }
+
+    return result;
 }
 
 
@@ -113,8 +122,12 @@ char* toBase36(int value){
 
 
 size_t validatePointer(size_t p){
-    if(p < 0) return 0;
-    else if(p >= MAX_MEMORY_SIZE) return MAX_MEMORY_SIZE - 1;
+    if(p < 0)
+        return 0;
+
+    else if(p >= MAX_MEMORY_SIZE)
+        return MAX_MEMORY_SIZE - 1;
+
     else return p;
 }
 
@@ -249,7 +262,7 @@ int run(size_t length){
 
 int __compile(char* filename){
     FILE* file;
-    char* base36;
+    char* base26;
     size_t i, j, length;
 
     if(!checkExtension(filename, ".zzp")){
@@ -264,16 +277,16 @@ int __compile(char* filename){
     file = fopen(filename, "w");
 
     for(i = 0; i < length; i++) for(j = 0; j < 2; j++){
-        base36 = toBase36(opcodes[i][j]);
-        fprintf(file, "%s ", base36); free(base36);
+        base26 = intToBase26(opcodes[i][j]);
+        fprintf(file, "%s", base26); free(base26);
     }
 
     return fclose(file) != 0;
 }
 
 int __run(char* filename){
-    FILE* file; long code; size_t i = 0, j = 0;
-    char base36[MAX_BASE36_LENGTH];
+    FILE* file; size_t i = 0, j = 0;
+    char base26[MAX_BASE26_LENGTH];
 
     if(!checkExtension(filename, ".zzz")){
         printf("Error: The file \"%s\" isn't zzz runnable.", filename);
@@ -281,10 +294,8 @@ int __run(char* filename){
     }
 
     OPEN(filename, r) 0;
-    while(fscanf(file, "%s ", base36) != EOF){
-        code = strtol(base36, NULL, 36);
-        opcodes[i][j] = (int) code;
-
+    while(fscanf(file, "%4s", base26) != EOF){
+        opcodes[i][j] = base26toInt(base26);
         if(++j > 1) i++, j = 0;
     }
 
