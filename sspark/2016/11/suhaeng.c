@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define DEBUG_MODE 1
+#define DEBUG if(DEBUG_MODE)
+
 #define OPCODE_NOP    1
 #define OPCODE_MOVE   2
 #define OPCODE_PREV   3
@@ -31,21 +34,63 @@
 #define OPCODE_DIVIDE    23
 #define OPCODE_REMAINDER 24
 
-#define OPCODE(x) if(!strcmp(keyword, #x)) return OPCODE_##x; else
+#define OPCODE(x)  if(!strcmp(keyword, #x)) return OPCODE_##x; else
+#define COMMAND(x) if(!strcmp(argv[1], #x)) return __##x(argv[2]); else
+
+#define USAGE(x) printf("    %s "#x"\n", *argv);
+#define OPEN(filename, mode) if(NULL == (file = openFile(filename, #mode))) return
 
 #define MAX_LABEL_COUNT 65536
 #define MAX_MEMORY_SIZE 65536
-#define MAX_OPCODE_COUNT 32768
+#define MAX_OPCODE_COUNT 65536
 #define MAX_OPCODE_LENGTH 16
-#define MAX_FILENAME_LENGTH 256
+#define MAX_BASE36_LENGTH 5
+
+
+
+
 
 int label[MAX_LABEL_COUNT];
 int memory[MAX_MEMORY_SIZE];
 int opcodes[MAX_OPCODE_COUNT][2];
 
+char base36[] = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8',
+        '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+        'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+        'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+};
+
+
+
+
+
+int checkExtension(char* s, char* extension){
+    char* dot = strrchr(s, '.');
+
+    if(dot == NULL) return 0;
+    return strcmp(dot, extension) == 0;
+}
+
+FILE* openFile(char* filename, char* mode){
+    FILE* file = fopen(filename, mode);
+
+    if(file == NULL) printf("Error: The file \"%s\" doesn't exist.", filename);
+    return file;
+}
+
+
+
+
+
 void toUpperCase(char* s){
     size_t i, length = strlen(s);
     for(i = 0; i < length; i++) s[i] = (char) toupper(s[i]);
+}
+
+void toLowerCase(char* s){
+    size_t i, length = strlen(s);
+    for(i = 0; i < length; i++) s[i] = (char) tolower(s[i]);
 }
 
 int hash(char *s){
@@ -55,29 +100,67 @@ int hash(char *s){
     return (int) (hash % MAX_LABEL_COUNT);
 }
 
+char* toBase36(int value){
+    char buffer[MAX_BASE36_LENGTH] = "0000";
+    size_t offset = sizeof(buffer) - 1;
+
+    do { buffer[--offset] = base36[value % 36]; } while(value /= 36);
+    return strdup(buffer);
+}
+
+
+
+
+
+size_t validatePointer(size_t p){
+    if(p < 0) return 0;
+    else if(p >= MAX_MEMORY_SIZE) return MAX_MEMORY_SIZE - 1;
+    else return p;
+}
+
+
+
+
+
 int getOpcode(char* keyword){
     toUpperCase(keyword);
 
-    OPCODE(NOP) OPCODE(MOVE) OPCODE(PREV) OPCODE(NEXT) OPCODE(HERE) OPCODE(THERE) OPCODE(MARK) OPCODE(REMIND)
-    OPCODE(SET) OPCODE(IMPORT) OPCODE(EXPORT) OPCODE(SCAN) OPCODE(SCANF) OPCODE(PRINT) OPCODE(PRINTF)
-    OPCODE(ADD) OPCODE(SUBTRACT) OPCODE(MULTIPLY) OPCODE(DIVIDE) OPCODE(REMAINDER)
+    OPCODE(NOP)
+    OPCODE(MOVE)
+    OPCODE(PREV)
+    OPCODE(NEXT)
+    OPCODE(HERE)
+    OPCODE(THERE)
+    OPCODE(MARK)
+    OPCODE(REMIND)
+
+    OPCODE(SET)
+    OPCODE(IMPORT)
+    OPCODE(EXPORT)
+    OPCODE(SCAN)
+    OPCODE(SCANF)
+    OPCODE(PRINT)
+    OPCODE(PRINTF)
+
+    OPCODE(ADD)
+    OPCODE(SUBTRACT)
+    OPCODE(MULTIPLY)
+    OPCODE(DIVIDE)
+    OPCODE(REMAINDER)
 
     return 0;
 }
 
-size_t interpret(char* filename){
+size_t compile(char* filename){
     FILE* file; size_t i = 0;
 
     int opcode, argument;
-    char keyword[MAX_OPCODE_LENGTH], sargument[MAX_OPCODE_COUNT];
+    char keyword[MAX_OPCODE_LENGTH], labelName[MAX_OPCODE_COUNT];
 
-    if(NULL == (file = fopen(filename, "r"))){
-        printf("Error: The file \"%s\" doesn't exist.", filename);
-        return 0;
-    }
+    OPEN(filename, r) 0;
 
     while(fscanf(file, "%s ", keyword) != EOF){
-        //printf("(%s) ", keyword);
+        DEBUG printf("(%s) ", keyword);
 
         switch(opcode = getOpcode(keyword)){
             case OPCODE_NOP:
@@ -99,18 +182,18 @@ size_t interpret(char* filename){
             case OPCODE_SUBTRACT:
             case OPCODE_MULTIPLY:
                 fscanf(file, " %d", &argument);
-                //printf("[%d] ", argument);
+                DEBUG printf("[%d] ", argument);
 
                 opcodes[i][0] = opcode;
                 opcodes[i][1] = argument; break;
 
             case OPCODE_MARK:
             case OPCODE_REMIND:
-                fscanf(file, " %s", sargument);
-                //printf("[%s] ", sargument);
+                fscanf(file, " %s", labelName);
+                DEBUG printf("[%s] ", labelName);
 
                 opcodes[i][0] = opcode;
-                opcodes[i][1] = hash(sargument); break;
+                opcodes[i][1] = hash(labelName); break;
 
             default:
                 printf("Error: Unknown keyword \"%s\".", keyword);
@@ -123,13 +206,7 @@ size_t interpret(char* filename){
     fclose(file); return i;
 }
 
-size_t validatePointer(size_t p){
-    if(p < 0) return 0;
-    else if(p >= MAX_MEMORY_SIZE) return MAX_MEMORY_SIZE - 1;
-    else return p;
-}
-
-void run(size_t length){
+int run(size_t length){
     size_t i, p = 0;
     int opcode, argument;
 
@@ -162,15 +239,74 @@ void run(size_t length){
             break; case OPCODE_REMAINDER: memory[p] %= argument;
         }
     }
+
+    return memory[p];
 }
 
-int main(){
-    size_t length;
-    char filename[MAX_FILENAME_LENGTH];
 
-    printf("> "), scanf("%s", filename);
-    length = interpret(filename);
 
-    if(length) run(length);
-    return putchar('\n'), system("pause"), 0;
+
+
+int __compile(char* filename){
+    FILE* file;
+    char* base36;
+    size_t i, j, length;
+
+    if(!checkExtension(filename, ".zzp")){
+        printf("Error: The file \"%s\" isn't zzp source.", filename);
+        return 1;
+    }
+
+    length = compile(filename);
+    if(!length) return 1;
+
+    filename[strlen(filename) - 1] = 'z';
+    file = fopen(filename, "w");
+
+    for(i = 0; i < length; i++) for(j = 0; j < 2; j++){
+        base36 = toBase36(opcodes[i][j]);
+        fprintf(file, "%s ", base36); free(base36);
+    }
+
+    return fclose(file) != 0;
+}
+
+int __run(char* filename){
+    FILE* file; long code; size_t i = 0, j = 0;
+    char base36[MAX_BASE36_LENGTH];
+
+    if(!checkExtension(filename, ".zzz")){
+        printf("Error: The file \"%s\" isn't zzz runnable.", filename);
+        return 1;
+    }
+
+    OPEN(filename, r) 0;
+    while(fscanf(file, "%s ", base36) != EOF){
+        code = strtol(base36, NULL, 36);
+        opcodes[i][j] = (int) code;
+
+        if(++j > 1) i++, j = 0;
+    }
+
+    return run(i);
+}
+
+
+
+
+
+int main(int argc, char** argv){
+    if(argc < 3){
+        puts("Usage:\n");
+
+        USAGE(compile <filename.zzp>)
+        USAGE(run     <filename.zzz>)
+        USAGE(encode  <filename.zzz>)
+        USAGE(decode  <filename.zzz>)
+
+        return 1;
+    }
+
+    toLowerCase(argv[1]);
+    COMMAND(compile) COMMAND(run) return 0;
 }
