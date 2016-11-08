@@ -57,7 +57,7 @@ int label[MAX_LABEL_COUNT];
 int memory[MAX_MEMORY_SIZE];
 int opcodes[MAX_OPCODE_COUNT][2];
 
-char base26[] = {
+char digits[] = {
         'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
         'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
         'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
@@ -106,13 +106,13 @@ char* intToBase26(int value){
     char buffer[MAX_BASE26_LENGTH] = "AAAA";
     size_t offset = sizeof(buffer) - 1;
 
-    do { buffer[--offset] = base26[value % 26]; } while(value /= 26);
+    do { buffer[--offset] = digits[value % 26]; } while(value /= 26);
     return strdup(buffer);
 }
 
-int base26toInt(char* base26){
+int base26toInt(char* buffer){
     char c; int result = 0;
-    while((c = *base26++) > 0){
+    while((c = *buffer++) > 0){
         if(c < 'A' || 'Z' < c) return -1;
         result = result * 26 + (c - 'A');
     }
@@ -186,7 +186,6 @@ size_t compile(char* filename){
     int opcode, argument;
     char keyword[MAX_OPCODE_LENGTH], labelName[MAX_OPCODE_COUNT];
 
-    if(!checkExtension(filename, ".zzp")) return 0;
     OPEN(filename, r) 0;
 
     while(fscanf(file, "%s ", keyword) != EOF){
@@ -278,22 +277,9 @@ int execute(size_t length){
     return memory[p];
 }
 
-
-
-
-
-int __compile(char* filename){
+int serialize(char* filename, size_t length){
     FILE* file;
-    char* base26;
-    size_t i, j, length;
-
-    if(!checkExtension(filename, ".zzp")){
-        printf("Error: The file \"%s\" isn't zzp source code.", filename);
-        return 1;
-    }
-
-    length = compile(filename);
-    if(!length) return 1;
+    size_t i, j; char* base26;
 
     filename[strlen(filename) - 1] = 'z';
     file = fopen(filename, "w");
@@ -306,14 +292,9 @@ int __compile(char* filename){
     return fclose(file) != 0;
 }
 
-int __execute(char* filename){
+size_t deserialize(char* filename){
     FILE* file; size_t i = 0, j = 0;
     char base26[MAX_BASE26_LENGTH];
-
-    if(!checkExtension(filename, ".zzz")){
-        printf("Error: The file \"%s\" isn't zzz executable code.", filename);
-        return 1;
-    }
 
     OPEN(filename, r) 0;
     while(fscanf(file, "%4s", base26) != EOF){
@@ -321,14 +302,55 @@ int __execute(char* filename){
         if(++j > 1) i++, j = 0;
     }
 
-    return execute(i);
+    return i;
+}
+
+
+
+
+
+int __compile(char* filename){
+    size_t length;
+
+    if(!checkExtension(filename, ".zzp")){
+        printf("Error: The file \"%s\" isn't zzp source code.", filename);
+        return 1;
+    }
+
+    length = compile(filename);
+    return length ? serialize(filename, length) : 1;
+}
+
+int __execute(char* filename){
+    size_t length;
+
+    if(!checkExtension(filename, ".zzz")){
+        printf("Error: The file \"%s\" isn't zzz executable code.", filename);
+        return 1;
+    }
+
+    length = deserialize(filename);
+    return execute(length);
 }
 
 int __encrypt(char* filename, char* key){
+    size_t length, i = 0;
+    size_t keyLength, k = 0;
+
+    if(!checkExtension(filename, ".zzz")){
+        printf("Error: The file \"%s\" isn't zzz executable code.", filename);
+        return 1;
+    }
+
     return 0;
 }
 
 int __decrypt(char* filename, char* key){
+    if(!checkExtension(filename, ".zze")){
+        printf("Error: The file \"%s\" isn't zzs encrypted code.", filename);
+        return 1;
+    }
+
     return 0;
 }
 
@@ -345,13 +367,14 @@ void printUsage(char** argv){
     USAGE(compile <file.zzp>)
     USAGE(execute <file.zzz>)
     USAGE(encrypt <file.zzz> <key>)
-    USAGE(decrypt <file.zzs> <key>)
+    USAGE(decrypt <file.zze> <key>)
 }
 
 int main(int argc, char** argv){
-    ARGC(3)
-
+    ARGC(2)
     toLowerCase(argv[1]);
+
+    ARGC(3)
     COMMAND(compile) COMMAND(execute)
 
     ARGC(4)
