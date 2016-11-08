@@ -36,8 +36,11 @@
 
 #define OPCODE(x)  if(!strcmp(keyword, #x)) return OPCODE_##x; else
 #define COMMAND(x) if(!strcmp(argv[1], #x)) return __##x(argv[2]); else
+#define BICOMMAND(x) if(!strcmp(argv[1], #x)) return __##x(argv[2], argv[3]); else
 
 #define USAGE(x) printf("    %s "#x"\n", *argv);
+#define ARGC(x) if(argc < x) return printUsage(argv), 1;
+
 #define OPEN(filename, mode) if(NULL == (file = openFile(filename, #mode))) return
 
 #define MAX_LABEL_COUNT 65536
@@ -164,12 +167,18 @@ int getOpcode(char* keyword){
     return 0;
 }
 
+/**
+ * reads code from zzp file and saves it to `opcodes` array.
+ * @param filename zzp file to read. ends with ".zzp".
+ * @return The count of opcodes that read from the file.
+ */
 size_t compile(char* filename){
     FILE* file; size_t i = 0;
 
     int opcode, argument;
     char keyword[MAX_OPCODE_LENGTH], labelName[MAX_OPCODE_COUNT];
 
+    if(!checkExtension(filename, ".zzp")) return 0;
     OPEN(filename, r) 0;
 
     while(fscanf(file, "%s ", keyword) != EOF){
@@ -219,7 +228,12 @@ size_t compile(char* filename){
     fclose(file); return i;
 }
 
-int run(size_t length){
+/**
+ * reads code from `opcodes` array and executes it.
+ * @param length The count of opcodes in `opcodes` array.
+ * @return memory value which the pointer points when program has been finished.
+ */
+int execute(size_t length){
     size_t i, p = 0;
     int opcode, argument;
 
@@ -266,7 +280,7 @@ int __compile(char* filename){
     size_t i, j, length;
 
     if(!checkExtension(filename, ".zzp")){
-        printf("Error: The file \"%s\" isn't zzp source.", filename);
+        printf("Error: The file \"%s\" isn't zzp source code.", filename);
         return 1;
     }
 
@@ -284,12 +298,12 @@ int __compile(char* filename){
     return fclose(file) != 0;
 }
 
-int __run(char* filename){
+int __execute(char* filename){
     FILE* file; size_t i = 0, j = 0;
     char base26[MAX_BASE26_LENGTH];
 
     if(!checkExtension(filename, ".zzz")){
-        printf("Error: The file \"%s\" isn't zzz runnable.", filename);
+        printf("Error: The file \"%s\" isn't zzz executable code.", filename);
         return 1;
     }
 
@@ -299,25 +313,38 @@ int __run(char* filename){
         if(++j > 1) i++, j = 0;
     }
 
-    return run(i);
+    return execute(i);
+}
+
+int __encrypt(char* filename, char* key){
+    return 0;
+}
+
+int __decrypt(char* filename, char* key){
+    return 0;
 }
 
 
 
 
 
+void printUsage(char** argv){
+    puts("Usage:");
+
+    USAGE(compile <file.zzp>)
+    USAGE(execute <file.zzz>)
+    USAGE(encrypt <file.zzz> <key>)
+    USAGE(decrypt <file.zzs> <key>)
+}
+
 int main(int argc, char** argv){
-    if(argc < 3){
-        puts("Usage:\n");
-
-        USAGE(compile <filename.zzp>)
-        USAGE(run     <filename.zzz>)
-        USAGE(encode  <filename.zzz>)
-        USAGE(decode  <filename.zzz>)
-
-        return 1;
-    }
+    ARGC(3)
 
     toLowerCase(argv[1]);
-    COMMAND(compile) COMMAND(run) return 0;
+    COMMAND(compile) COMMAND(execute)
+
+    ARGC(4)
+    BICOMMAND(encrypt) BICOMMAND(decrypt)
+
+    return printUsage(argv), 1;
 }
