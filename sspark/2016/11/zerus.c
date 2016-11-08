@@ -123,8 +123,12 @@ int base26toInt(char* base26){
 
 
 
-
-size_t validatePointer(size_t p){
+/**
+ * prevents the memory index out of range.
+ * @param p memory index.
+ * @return safe memory index.
+ */
+size_t memoryIndex(size_t p){
     if(p < 0)
         return 0;
 
@@ -137,7 +141,11 @@ size_t validatePointer(size_t p){
 
 
 
-
+/**
+ * checks string and finds proper keyword.
+ * @param keyword the string to find keyword.
+ * @return found keyword. If not, 0 is returned.
+ */
 int getOpcode(char* keyword){
     toUpperCase(keyword);
 
@@ -243,9 +251,9 @@ int execute(size_t length){
         switch(opcode){
             default: case OPCODE_NOP:
 
-            break; case OPCODE_MOVE:   p = validatePointer((size_t) argument);
-            break; case OPCODE_PREV:   p = validatePointer(p - (size_t) argument);
-            break; case OPCODE_NEXT:   p = validatePointer(p + (size_t) argument);
+            break; case OPCODE_MOVE:   p = memoryIndex((size_t) argument);
+            break; case OPCODE_PREV:   p = memoryIndex(p - (size_t) argument);
+            break; case OPCODE_NEXT:   p = memoryIndex(p + (size_t) argument);
             break; case OPCODE_HERE:   memory[p] = (int) p;
             break; case OPCODE_THERE:  p = (size_t) memory[p];
             break; case OPCODE_MARK:   label[argument] = (int) i;
@@ -327,7 +335,10 @@ int __decrypt(char* filename, char* key){
 
 
 
-
+/**
+ * prints program usage.
+ * @param argv arguments.
+ */
 void printUsage(char** argv){
     puts("Usage:");
 
