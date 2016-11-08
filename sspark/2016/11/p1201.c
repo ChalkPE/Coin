@@ -7,6 +7,6 @@
 #include <ctype.h>
 
 int main(){
-    size_t i; char c, s[100]; scanf("%s", s);
-    while((c = s[i++])) if(isalpha(c)) putchar(toupper(c));
+    char s[100]; size_t i = 0; scanf("%s", s);
+    while((*s = s[i++])) if(isalpha(*s)) putchar(toupper(*s));
 }
