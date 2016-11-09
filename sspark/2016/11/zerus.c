@@ -11,28 +11,28 @@
 #define DEBUG_MODE 1
 #define DEBUG if(DEBUG_MODE)
 
-#define OPCODE_NOP    1
-#define OPCODE_MOVE   2
-#define OPCODE_PREV   3
-#define OPCODE_NEXT   4
-#define OPCODE_HERE   5
-#define OPCODE_THERE  6
-#define OPCODE_MARK   7
-#define OPCODE_REMIND 8
+#define OPCODE_NOP    10000
+#define OPCODE_MOVE   20000
+#define OPCODE_PREV   30000
+#define OPCODE_NEXT   40000
+#define OPCODE_HERE   50000
+#define OPCODE_THERE  60000
+#define OPCODE_MARK   70000
+#define OPCODE_REMIND 80000
 
-#define OPCODE_SET    10
-#define OPCODE_IMPORT 11
-#define OPCODE_EXPORT 12
-#define OPCODE_SCAN   13
-#define OPCODE_SCANF  14
-#define OPCODE_PRINT  15
-#define OPCODE_PRINTF 16
+#define OPCODE_SET    100000
+#define OPCODE_IMPORT 110000
+#define OPCODE_EXPORT 120000
+#define OPCODE_SCAN   130000
+#define OPCODE_SCANF  140000
+#define OPCODE_PRINT  150000
+#define OPCODE_PRINTF 160000
 
-#define OPCODE_ADD       20
-#define OPCODE_SUBTRACT  21
-#define OPCODE_MULTIPLY  22
-#define OPCODE_DIVIDE    23
-#define OPCODE_REMAINDER 24
+#define OPCODE_ADD       200000
+#define OPCODE_SUBTRACT  210000
+#define OPCODE_MULTIPLY  220000
+#define OPCODE_DIVIDE    230000
+#define OPCODE_REMAINDER 240000
 
 #define OPCODE(x)  if(!strcmp(keyword, #x)) return OPCODE_##x; else
 #define COMMAND(x) if(!strcmp(argv[1], #x)) return __##x(argv[2]); else
@@ -66,7 +66,12 @@ char digits[] = {
 
 
 
-
+/**
+ * checks if the string ends with the extension.
+ * @param s the filename to check.
+ * @param extension the extension starts with dot.
+ * @return
+ */
 int checkExtension(char* s, char* extension){
     char* dot = strrchr(s, '.');
 
@@ -74,6 +79,12 @@ int checkExtension(char* s, char* extension){
     return strcmp(dot, extension) == 0;
 }
 
+/**
+ * opens the file. if it doen't exists, prints error.
+ * @param filename name of the file to open.
+ * @param mode open mode. same as `fopen(..., mode)`.
+ * @return the FILE pointer. if fails, NULL.
+ */
 FILE* openFile(char* filename, char* mode){
     FILE* file = fopen(filename, mode);
 
@@ -84,17 +95,56 @@ FILE* openFile(char* filename, char* mode){
 
 
 
-
+/**
+ * make every characters in string upper case.
+ * @param s the string.
+ */
 void toUpperCase(char* s){
     size_t i, length = strlen(s);
     for(i = 0; i < length; i++) s[i] = (char) toupper(s[i]);
 }
 
+/**
+ * makes every characters in string lower case.
+ * @param s the string.
+ */
 void toLowerCase(char* s){
     size_t i, length = strlen(s);
     for(i = 0; i < length; i++) s[i] = (char) tolower(s[i]);
 }
 
+/**
+ * checks if the character is upper case. if not, prints error.
+ * @param c the character.
+ * @param where description for error message.
+ * @return if the character is upper case.
+ */
+int requireUpperCase(char c, char* where){
+    if(!isalpha(c) || !isupper(c)){
+        printf("Error: An illegal character '%c (%d)' has been found in the %s. ", c, c, where);
+        return 0;
+    }
+    return 1;
+}
+
+/**
+ * checks if eveny characters in the string is upper case. if not, prints error.
+ * @param s the string
+ * @param where description for error message.
+ * @return if every characters is upper case.
+ */
+int requireUpperCases(char* s, char* where){
+    size_t i, length = strlen(s);
+
+    for(i = 0; i < length; i++) if(!requireUpperCase(s[i], where)) return 0;
+    return 1;
+}
+
+/**
+ * creates the hash of the string.
+ * @param s the string.
+ * @return the hash. 0 <= x < MAX_LABEL_COUNT.
+ */
 int hash(char *s){
     char c; unsigned long hash = 5381;
 
@@ -102,6 +152,11 @@ int hash(char *s){
     return (int) (hash % MAX_LABEL_COUNT);
 }
 
+/**
+ * converts integer to base26 string.
+ * @param value the integer to convert.
+ * @return the base26 string of the value.
+ */
 char* intToBase26(int value){
     char buffer[MAX_BASE26_LENGTH] = "AAAA";
     size_t offset = sizeof(buffer) - 1;
@@ -110,6 +165,11 @@ char* intToBase26(int value){
     return strdup(buffer);
 }
 
+/**
+ * converts base26 string to integer.
+ * @param buffer the base26 string.
+ * @return the integer value of base26 string.
+ */
 int base26toInt(char* buffer){
     char c; int result = 0;
     while((c = *buffer++) > 0){
@@ -129,13 +189,9 @@ int base26toInt(char* buffer){
  * @return safe memory index.
  */
 size_t memoryIndex(size_t p){
-    if(p < 0)
-        return 0;
-
-    else if(p >= MAX_MEMORY_SIZE)
-        return MAX_MEMORY_SIZE - 1;
-
-    else return p;
+    if(p < 0) return 0;
+    else if(p < MAX_MEMORY_SIZE) return p;
+    else return MAX_MEMORY_SIZE - 1;
 }
 
 
@@ -248,7 +304,12 @@ int execute(size_t length){
         opcode = opcodes[i][0], argument = opcodes[i][1];
 
         switch(opcode){
-            default: case OPCODE_NOP:
+            default:
+                printf("Error: Invalid opcode '0x%x' on index %d.", opcode, (int) i);
+                return -1;
+
+            case OPCODE_NOP:
+                DEBUG printf("<nop> ");
 
             break; case OPCODE_MOVE:   p = memoryIndex((size_t) argument);
             break; case OPCODE_PREV:   p = memoryIndex(p - (size_t) argument);
@@ -277,6 +338,12 @@ int execute(size_t length){
     return memory[p];
 }
 
+/**
+ * serializes `opcodes` array to base26 strings and save them to file.
+ * @param filename name of the file to save results.
+ * @param length the count of opcodes.
+ * @return if it succeeded
+ */
 int serialize(char* filename, size_t length){
     FILE* file;
     size_t i, j; char* base26;
@@ -292,6 +359,11 @@ int serialize(char* filename, size_t length){
     return fclose(file) != 0;
 }
 
+/**
+ * load the file and deserialize base26 strings to `opcodes` array.
+ * @param filename name of file to read base26 strings.
+ * @return the count of opcodes.
+ */
 size_t deserialize(char* filename){
     FILE* file; size_t i = 0, j = 0;
     char base26[MAX_BASE26_LENGTH];
@@ -334,23 +406,65 @@ int __execute(char* filename){
 }
 
 int __encrypt(char* filename, char* key){
-    size_t length, i = 0;
-    size_t keyLength, k = 0;
+    FILE *file, *output;
+    char c; size_t k = 0, keyLength;
 
     if(!checkExtension(filename, ".zzz")){
         printf("Error: The file \"%s\" isn't zzz executable code.", filename);
         return 1;
     }
 
+    requireUpperCases(key, "key");
+    OPEN(filename, r) 0;
+
+    filename[strlen(filename) - 1] = 'e';
+    output = fopen(filename, "w");
+    keyLength = strlen(key);
+
+    while(fscanf(file, "%c", &c) != EOF){
+        if(!requireUpperCase(c, "file")){
+            fclose(file); return 1;
+        }
+
+        /* Vigenère cipher */
+        c = (char) ('A' + ((c - 'A') + (key[k] - 'A')) % 26);
+
+        fprintf(output, "%c", c);
+        if(++k >= keyLength) k = 0;
+    }
+
+    fclose(file); fclose(output);
     return 0;
 }
 
-int __decrypt(char* filename, char* key){
+int __decrypt(char* filename, char* key){FILE *file, *output;
+    char c; size_t k = 0, keyLength;
+
     if(!checkExtension(filename, ".zze")){
-        printf("Error: The file \"%s\" isn't zzs encrypted code.", filename);
+        printf("Error: The file \"%s\" isn't zze encrypted code.", filename);
         return 1;
     }
 
+    requireUpperCases(key, "key");
+    OPEN(filename, r) 0;
+
+    filename[strlen(filename) - 1] = 'z';
+    output = fopen(filename, "w");
+    keyLength = strlen(key);
+
+    while(fscanf(file, "%c", &c) != EOF){
+        if(!requireUpperCase(c, "file")){
+            fclose(file); return 1;
+        }
+
+        /* Vigenère cipher */
+        c = (char) ('A' + (26 + (c - 'A') - (key[k] - 'A')) % 26);
+
+        fprintf(output, "%c", c);
+        if(++k >= keyLength) k = 0;
+    }
+
+    fclose(file); fclose(output);
     return 0;
 }
 
@@ -366,8 +480,8 @@ void printUsage(char** argv){
 
     USAGE(compile <file.zzp>)
     USAGE(execute <file.zzz>)
-    USAGE(encrypt <file.zzz> <key>)
-    USAGE(decrypt <file.zze> <key>)
+    USAGE(encrypt <file.zzz> <KEY>)
+    USAGE(decrypt <file.zze> <KEY>)
 }
 
 int main(int argc, char** argv){
