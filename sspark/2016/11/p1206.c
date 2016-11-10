@@ -3,10 +3,10 @@
  * @since 2016-11-10
  */
 
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-int main(){
-    char s[100]; size_t i;
-    for(scanf("%s", s), i = 0; s[i]; i++) if(isalnum(s[i])) putchar(isalpha(s[i]) ? tolower(s[i]) : s[i]);
+int main(size_t i, char* s){
+    for(i = 0, scanf("%s", s = malloc(101)); s[i]; i++) isalnum(s[i]) && putchar(tolower(s[i]));
 }
