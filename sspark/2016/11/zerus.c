@@ -336,7 +336,7 @@ int execute(size_t length){
             break; case OPCODE_HERE:   memory[p] = (int) p;
             break; case OPCODE_THERE:  p = (size_t) memory[p];
             break; case OPCODE_MARK:   label[argument] = (int) i;
-            break; case OPCODE_REMIND: if(memory[p] != 0) i = (size_t) label[argument];
+            break; case OPCODE_REMIND: if(memory[p] > 0) i = (size_t) label[argument];
 
             break; case OPCODE_SET:    memory[p] = argument;
             break; case OPCODE_IMPORT: memory[p] = memory[argument];
