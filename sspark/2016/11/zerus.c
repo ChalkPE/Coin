@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG_MODE 1
 #define DEBUG if(DEBUG_MODE)
 
 #define OPCODE_NOP    10000
@@ -24,15 +23,18 @@
 #define OPCODE_IMPORT 110000
 #define OPCODE_EXPORT 120000
 #define OPCODE_SCAN   130000
-#define OPCODE_SCANF  140000
+#define OPCODE_SCANS  140000
 #define OPCODE_PRINT  150000
-#define OPCODE_PRINTF 160000
+#define OPCODE_PRINTS 160000
 
 #define OPCODE_ADD       200000
 #define OPCODE_SUBTRACT  210000
 #define OPCODE_MULTIPLY  220000
 #define OPCODE_DIVIDE    230000
 #define OPCODE_REMAINDER 240000
+
+#define OPCODE_COMMENT_BEGIN 300000
+#define OPCODE_COMMENT_END   310000
 
 #define OPCODE(x)  if(!strcmp(keyword, #x)) return OPCODE_##x; else
 #define COMMAND(x) if(!strcmp(argv[1], #x)) return __##x(argv[2]); else
@@ -49,10 +51,7 @@
 #define MAX_OPCODE_LENGTH 16
 #define MAX_BASE26_LENGTH 5
 
-
-
-
-
+int DEBUG_MODE = 0;
 int label[MAX_LABEL_COUNT];
 int memory[MAX_MEMORY_SIZE];
 int opcodes[MAX_OPCODE_COUNT][2];
@@ -64,13 +63,24 @@ char digits[] = {
 };
 
 
+/**
+ * prints program usage.
+ * @param argv arguments.
+ */
+void printUsage(char** argv){
+    puts("Usage:");
 
+    USAGE(compile <file.zzp>)
+    USAGE(execute <file.zzz>)
+    USAGE(encrypt <file.zzz> <KEY>)
+    USAGE(decrypt <file.zze> <KEY>)
+}
 
 /**
  * checks if the string ends with the extension.
  * @param s the filename to check.
  * @param extension the extension starts with dot.
- * @return
+ * @return if the string ends with the extension.
  */
 int checkExtension(char* s, char* extension){
     char* dot = strrchr(s, '.');
@@ -93,10 +103,8 @@ FILE* openFile(char* filename, char* mode){
 }
 
 
-
-
 /**
- * make every characters in string upper case.
+ * makes every characters in string upper case.
  * @param s the string.
  */
 void toUpperCase(char* s){
@@ -129,9 +137,9 @@ int requireUpperCase(char c, char* where){
 
 /**
  * checks if eveny characters in the string is upper case. if not, prints error.
- * @param s the string
+ * @param s the string.
  * @param where description for error message.
- * @return if every characters is upper case.
+ * @return if every characters are upper case.
  */
 int requireUpperCases(char* s, char* where){
     size_t i, length = strlen(s);
@@ -181,8 +189,6 @@ int base26toInt(char* buffer){
 }
 
 
-
-
 /**
  * prevents the memory index out of range.
  * @param p memory index.
@@ -195,15 +201,16 @@ size_t memoryIndex(size_t p){
 }
 
 
-
-
 /**
  * checks string and finds proper keyword.
  * @param keyword the string to find keyword.
- * @return found keyword. If not, 0 is returned.
+ * @return found keyword. if not, 0 is returned.
  */
 int getOpcode(char* keyword){
     toUpperCase(keyword);
+
+    if(*keyword == '`') return OPCODE_COMMENT_BEGIN;
+    if(keyword[strlen(keyword) - 1] == '`') return OPCODE_COMMENT_END;
 
     OPCODE(NOP)
     OPCODE(MOVE)
@@ -218,9 +225,9 @@ int getOpcode(char* keyword){
     OPCODE(IMPORT)
     OPCODE(EXPORT)
     OPCODE(SCAN)
-    OPCODE(SCANF)
+    OPCODE(SCANS)
     OPCODE(PRINT)
-    OPCODE(PRINTF)
+    OPCODE(PRINTS)
 
     OPCODE(ADD)
     OPCODE(SUBTRACT)
@@ -234,12 +241,12 @@ int getOpcode(char* keyword){
 /**
  * reads code from zzp file and saves it to `opcodes` array.
  * @param filename zzp file to read. ends with ".zzp".
- * @return The count of opcodes that read from the file.
+ * @return the count of opcodes that read from the file.
  */
 size_t compile(char* filename){
     FILE* file; size_t i = 0;
 
-    int opcode, argument;
+    int opcode, argument, commented = 0;
     char keyword[MAX_OPCODE_LENGTH], labelName[MAX_OPCODE_COUNT];
 
     OPEN(filename, r) 0;
@@ -248,13 +255,24 @@ size_t compile(char* filename){
         DEBUG printf("(%s) ", keyword);
 
         switch(opcode = getOpcode(keyword)){
+            case OPCODE_COMMENT_BEGIN:
+                commented = 1; continue;
+
+            case OPCODE_COMMENT_END:
+                DEBUG printf("\n");
+                commented = 0; continue;
+
+            default: if(commented) continue;
+        }
+
+        switch(opcode){
             case OPCODE_NOP:
             case OPCODE_HERE:
             case OPCODE_THERE:
             case OPCODE_SCAN:
-            case OPCODE_SCANF:
+            case OPCODE_SCANS:
             case OPCODE_PRINT:
-            case OPCODE_PRINTF:
+            case OPCODE_PRINTS:
                 opcodes[i][0] = opcode; break;
 
             case OPCODE_MOVE:
@@ -285,6 +303,7 @@ size_t compile(char* filename){
                 fclose(file); return 0;
         }
 
+        DEBUG printf("\n");
         if(++i >= MAX_OPCODE_COUNT) break;
     }
 
@@ -323,9 +342,9 @@ int execute(size_t length){
             break; case OPCODE_IMPORT: memory[p] = memory[argument];
             break; case OPCODE_EXPORT: memory[argument] = memory[p];
             break; case OPCODE_SCAN:   memory[p] = getchar();
-            break; case OPCODE_SCANF:  scanf("%d", memory + p);
+            break; case OPCODE_SCANS:  scanf("%d", memory + p);
             break; case OPCODE_PRINT:  putchar(memory[p]);
-            break; case OPCODE_PRINTF: printf("%d", memory[p]);
+            break; case OPCODE_PRINTS: printf("%d", memory[p]);
 
             break; case OPCODE_ADD:       memory[p] += argument;
             break; case OPCODE_SUBTRACT:  memory[p] -= argument;
@@ -342,7 +361,7 @@ int execute(size_t length){
  * serializes `opcodes` array to base26 strings and save them to file.
  * @param filename name of the file to save results.
  * @param length the count of opcodes.
- * @return if it succeeded
+ * @return if it succeeded.
  */
 int serialize(char* filename, size_t length){
     FILE* file;
@@ -376,9 +395,6 @@ size_t deserialize(char* filename){
 
     return i;
 }
-
-
-
 
 
 int __compile(char* filename){
@@ -422,9 +438,7 @@ int __encrypt(char* filename, char* key){
     keyLength = strlen(key);
 
     while(fscanf(file, "%c", &c) != EOF){
-        if(!requireUpperCase(c, "file")){
-            fclose(file); return 1;
-        }
+        if(!requireUpperCase(c, "file")) return fclose(file), 1;
 
         /* Vigenère cipher */
         c = (char) ('A' + ((c - 'A') + (key[k] - 'A')) % 26);
@@ -453,9 +467,7 @@ int __decrypt(char* filename, char* key){FILE *file, *output;
     keyLength = strlen(key);
 
     while(fscanf(file, "%c", &c) != EOF){
-        if(!requireUpperCase(c, "file")){
-            fclose(file); return 1;
-        }
+        if(!requireUpperCase(c, "file")) return fclose(file), 1;
 
         /* Vigenère cipher */
         c = (char) ('A' + (26 + (c - 'A') - (key[k] - 'A')) % 26);
@@ -469,30 +481,12 @@ int __decrypt(char* filename, char* key){FILE *file, *output;
 }
 
 
-
-
-/**
- * prints program usage.
- * @param argv arguments.
- */
-void printUsage(char** argv){
-    puts("Usage:");
-
-    USAGE(compile <file.zzp>)
-    USAGE(execute <file.zzz>)
-    USAGE(encrypt <file.zzz> <KEY>)
-    USAGE(decrypt <file.zze> <KEY>)
-}
-
 int main(int argc, char** argv){
-    ARGC(2)
-    toLowerCase(argv[1]);
+    if(!strcmp(argv[argc - 1], "--debug")) DEBUG_MODE = 1;
 
-    ARGC(3)
-    COMMAND(compile) COMMAND(execute)
-
-    ARGC(4)
-    BICOMMAND(encrypt) BICOMMAND(decrypt)
+    ARGC(2) toLowerCase(argv[1]);
+    ARGC(3) COMMAND(compile) COMMAND(execute)
+    ARGC(4) BICOMMAND(encrypt) BICOMMAND(decrypt)
 
     return printUsage(argv), 1;
 }
