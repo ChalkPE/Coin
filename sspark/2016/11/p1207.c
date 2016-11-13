@@ -8,6 +8,5 @@
 
 int main(){
     char c, *p, s[101];
-    scanf("%s %c", s, &c), p = strchr(s, c);
-    p ? printf("%lu\n", p - s) : puts("No\n");
+    return (scanf("%s %c", s, &c), p = strchr(s, c)) ? printf("%lu\n", p - s) : puts("No\n"), 0;
 }
