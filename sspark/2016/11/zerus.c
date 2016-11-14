@@ -18,6 +18,7 @@
 #define OPCODE_THERE  60000
 #define OPCODE_MARK   70000
 #define OPCODE_REMIND 80000
+#define OPCODE_SKIP   90000
 
 #define OPCODE_SET    100000
 #define OPCODE_IMPORT 110000
@@ -32,6 +33,8 @@
 #define OPCODE_MULTIPLY  220000
 #define OPCODE_DIVIDE    230000
 #define OPCODE_REMAINDER 240000
+#define OPCODE_MIN       250000
+#define OPCODE_MAX       260000
 
 #define OPCODE_COMMENT_BEGIN 300000
 #define OPCODE_COMMENT_END   310000
@@ -61,7 +64,6 @@ char digits[] = {
         'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
         'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 };
-
 
 /**
  * prints program usage.
@@ -101,7 +103,6 @@ FILE* openFile(char* filename, char* mode){
     if(file == NULL) printf("Error: The file \"%s\" doesn't exist.", filename);
     return file;
 }
-
 
 /**
  * makes every characters in string upper case.
@@ -188,7 +189,6 @@ int base26toInt(char* buffer){
     return result;
 }
 
-
 /**
  * prevents the memory index out of range.
  * @param p memory index.
@@ -199,7 +199,6 @@ size_t memoryIndex(size_t p){
     else if(p < MAX_MEMORY_SIZE) return p;
     else return MAX_MEMORY_SIZE - 1;
 }
-
 
 /**
  * checks string and finds proper keyword.
@@ -220,6 +219,7 @@ int getOpcode(char* keyword){
     OPCODE(THERE)
     OPCODE(MARK)
     OPCODE(REMIND)
+    OPCODE(SKIP)
 
     OPCODE(SET)
     OPCODE(IMPORT)
@@ -234,6 +234,8 @@ int getOpcode(char* keyword){
     OPCODE(MULTIPLY)
     OPCODE(DIVIDE)
     OPCODE(REMAINDER)
+    OPCODE(MIN)
+    OPCODE(MAX)
 
     return 0;
 }
@@ -278,12 +280,15 @@ size_t compile(char* filename){
             case OPCODE_MOVE:
             case OPCODE_PREV:
             case OPCODE_NEXT:
+            case OPCODE_SKIP:
             case OPCODE_SET:
             case OPCODE_IMPORT:
             case OPCODE_EXPORT:
             case OPCODE_ADD:
             case OPCODE_SUBTRACT:
             case OPCODE_MULTIPLY:
+            case OPCODE_MIN:
+            case OPCODE_MAX:
                 fscanf(file, " %d", &argument);
                 DEBUG printf("[%d] ", argument);
 
@@ -337,6 +342,7 @@ int execute(size_t length){
             break; case OPCODE_THERE:  p = (size_t) memory[p];
             break; case OPCODE_MARK:   label[argument] = (int) i;
             break; case OPCODE_REMIND: if(memory[p] != 0) i = (size_t) label[argument];
+            break; case OPCODE_SKIP:   if(memory[p] != 0) i += (size_t) argument;
 
             break; case OPCODE_SET:    memory[p] = argument;
             break; case OPCODE_IMPORT: memory[p] = memory[argument];
@@ -351,6 +357,8 @@ int execute(size_t length){
             break; case OPCODE_MULTIPLY:  memory[p] *= argument;
             break; case OPCODE_DIVIDE:    memory[p] /= argument;
             break; case OPCODE_REMAINDER: memory[p] %= argument;
+            break; case OPCODE_MIN:       if(memory[p] < argument) memory[p] = argument;
+            break; case OPCODE_MAX:       if(memory[p] > argument) memory[p] = argument;
         }
     }
 
@@ -395,7 +403,6 @@ size_t deserialize(char* filename){
 
     return i;
 }
-
 
 int __compile(char* filename){
     size_t length;
@@ -479,7 +486,6 @@ int __decrypt(char* filename, char* key){FILE *file, *output;
     fclose(file); fclose(output);
     return 0;
 }
-
 
 int main(int argc, char** argv){
     if(!strcmp(argv[argc - 1], "--debug")) DEBUG_MODE = 1;
