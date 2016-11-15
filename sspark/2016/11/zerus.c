@@ -249,7 +249,7 @@ size_t compile(char* filename){
     FILE* file; size_t i = 0;
 
     int opcode, argument, commented = 0;
-    char keyword[MAX_OPCODE_LENGTH], labelName[MAX_OPCODE_COUNT];
+    char keyword[MAX_OPCODE_LENGTH], labelName[MAX_OPCODE_LENGTH];
 
     OPEN(filename, r) 0;
 
