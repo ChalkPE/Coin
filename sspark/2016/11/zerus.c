@@ -54,15 +54,11 @@
 #define MAX_OPCODE_LENGTH 16
 #define MAX_BASE26_LENGTH 5
 
-int DEBUG_MODE = 0;
-int label[MAX_LABEL_COUNT];
-int memory[MAX_MEMORY_SIZE];
-int opcodes[MAX_OPCODE_COUNT][2];
+int label[MAX_LABEL_COUNT], memory[MAX_MEMORY_SIZE], opcodes[MAX_OPCODE_COUNT][2], DEBUG_MODE = 0;
 
 char digits[] = {
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I',
-        'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 };
 
 /**
@@ -71,11 +67,8 @@ char digits[] = {
  */
 void printUsage(char** argv){
     puts("Usage:");
-
-    USAGE(compile <file.zzp>)
-    USAGE(execute <file.zzz>)
-    USAGE(encrypt <file.zzz> <KEY>)
-    USAGE(decrypt <file.zze> <KEY>)
+    USAGE(compile <file.zzp>) USAGE(execute <file.zzz>)
+    USAGE(encrypt <file.zzz> <KEY>) USAGE(decrypt <file.zze> <KEY>)
 }
 
 /**
@@ -185,7 +178,6 @@ int base26toInt(char* buffer){
         if(c < 'A' || 'Z' < c) return -1;
         result = result * 26 + (c - 'A');
     }
-
     return result;
 }
 
@@ -287,13 +279,19 @@ size_t compile(char* filename){
             case OPCODE_ADD:
             case OPCODE_SUBTRACT:
             case OPCODE_MULTIPLY:
+            case OPCODE_DIVIDE:
             case OPCODE_MIN:
             case OPCODE_MAX:
                 fscanf(file, " %d", &argument);
                 DEBUG printf("[%d] ", argument);
 
                 opcodes[i][0] = opcode;
-                opcodes[i][1] = argument; break;
+                opcodes[i][1] = argument;
+
+                if(opcode != OPCODE_DIVIDE || argument != 0) break;
+
+                printf("Error: Divide by zero.");
+                fclose(file); return 0;
 
             case OPCODE_MARK:
             case OPCODE_REMIND:
