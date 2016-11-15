@@ -280,6 +280,7 @@ size_t compile(char* filename){
             case OPCODE_SUBTRACT:
             case OPCODE_MULTIPLY:
             case OPCODE_DIVIDE:
+            case OPCODE_REMAINDER:
             case OPCODE_MIN:
             case OPCODE_MAX:
                 fscanf(file, " %d", &argument);
@@ -288,10 +289,10 @@ size_t compile(char* filename){
                 opcodes[i][0] = opcode;
                 opcodes[i][1] = argument;
 
-                if(opcode != OPCODE_DIVIDE || argument != 0) break;
-
-                printf("Error: Divide by zero.");
-                fclose(file); return 0;
+                if((opcode == OPCODE_DIVIDE || opcode == OPCODE_REMAINDER) && argument == 0){
+                    printf("Error: Divide by zero.");
+                    fclose(file); return 0;
+                } else break;
 
             case OPCODE_MARK:
             case OPCODE_REMIND:
